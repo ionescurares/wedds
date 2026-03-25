@@ -16,6 +16,9 @@ export type DashboardSite = {
   partner2_name: string | null;
   event_date: string | null;
   state: SiteState;
+  rsvp_yes_count: number;
+  rsvp_no_count: number;
+  rsvp_total_guests: number;
 };
 
 type Props = {
@@ -225,9 +228,23 @@ export default function DashboardClient({ initialSites, userEmail }: Props) {
                   <span className={styles.muted}>Not published yet</span>
                 )}
 
+                {(site.rsvp_yes_count > 0 || site.rsvp_no_count > 0) ? (
+                  <div className={styles.rsvpStats}>
+                    <span className={styles.rsvpStatGreen}>{site.rsvp_yes_count} attending</span>
+                    <span className={styles.rsvpStatMuted}>{site.rsvp_no_count} declined</span>
+                    <span className={styles.rsvpStatMuted}>{site.rsvp_total_guests} total guests</span>
+                  </div>
+                ) : (
+                  <span className={styles.muted}>No RSVPs yet</span>
+                )}
+
                 <div className={styles.row}>
                   <Link href={`/builder/${site.id}`} className={styles.secondaryBtn}>
                     Edit
+                  </Link>
+
+                  <Link href={`/dashboard/${site.id}/guests`} className={styles.secondaryBtn}>
+                    Guests
                   </Link>
 
                   <button

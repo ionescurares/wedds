@@ -18,7 +18,7 @@ export default async function DashboardPage() {
 
   const { data } = await supabase
     .from("sites")
-    .select("id, slug, status, updated_at, published_at, state, partner1_name, partner2_name, event_date")
+    .select("id, slug, status, updated_at, published_at, state, partner1_name, partner2_name, event_date, rsvp_yes_count, rsvp_no_count, rsvp_total_guests")
     .eq("user_id", user.id)
     .order("updated_at", { ascending: false });
 

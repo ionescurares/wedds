@@ -71,5 +71,5 @@ export default async function PublicSitePage({ params }: PageProps) {
     notFound();
   }
 
-  return <ElegantEditorial state={site.state as SiteState} editable={false} />;
+  return <ElegantEditorial state={site.state as SiteState} editable={false} siteId={site.id} />;
 }
