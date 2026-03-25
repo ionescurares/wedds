@@ -1,3 +1,26 @@
+export type RsvpFieldType = "text" | "textarea" | "select" | "radio";
+
+export type RsvpField = {
+  id: string;
+  type: RsvpFieldType;
+  label: string;
+  placeholder?: string;
+  required: boolean;
+  options?: string[];
+};
+
+export type RsvpResponse = {
+  id: string;
+  site_id: string;
+  guest_name: string;
+  guest_email: string | null;
+  attending: "yes" | "no";
+  guest_count: number;
+  data: Record<string, string>;
+  submitted_at: string;
+  notes: string | null;
+};
+
 export type SiteState = {
   templateId: string;
   version: number;
@@ -21,6 +44,7 @@ export type SiteState = {
       alt: string;
     }
   >;
+  rsvpFields?: RsvpField[];
 };
 
 export type SiteStatus = "draft" | "published";
@@ -37,6 +61,9 @@ export type Site = {
   status: SiteStatus;
   expires_at: string | null;
   published_at: string | null;
+  rsvp_yes_count: number;
+  rsvp_no_count: number;
+  rsvp_total_guests: number;
   updated_at: string;
   created_at: string;
 };

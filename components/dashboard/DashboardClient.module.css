@@ -170,6 +170,15 @@
   font-size: 1.5rem;
 }
 
+.rsvpStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+}
+.rsvpStatGreen { color: #14632d; font-weight: 600; }
+.rsvpStatMuted { color: #76695f; }
+
 .error {
   color: #9d2424;
   font-size: 0.9rem;
