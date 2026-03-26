@@ -112,7 +112,7 @@ const ElegantEditorial = memo(function ElegantEditorial({ state, editable = fals
     guests: "0",
   });
 
-  const rsvpFields = state.rsvpFields ?? [];
+  const rsvpFields = useMemo(() => state.rsvpFields ?? [], [state.rsvpFields]);
 
   const requiredMissing = useMemo(() => {
     if (!formData.name?.trim()) return true;

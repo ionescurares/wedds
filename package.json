@@ -4,6 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "db:start": "npx supabase start",
+    "db:stop": "npx supabase stop",
+    "db:reset": "npx supabase db reset",
+    "db:studio": "node -e \"const { exec } = require('node:child_process'); const url='http://127.0.0.1:54323'; const cmd = process.platform==='win32' ? `start ${url}` : (process.platform==='darwin' ? `open ${url}` : `xdg-open ${url}`); exec(cmd);\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
