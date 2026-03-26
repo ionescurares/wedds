@@ -22,14 +22,23 @@ export default async function BuilderPage({ params, searchParams }: PageProps) {
   const admin = createAdminClient();
 
   if (siteId === "new") {
-    const slug =
+    const requestedSlug =
       (typeof searchParams.template === "string" && searchParams.template.trim()) || "elegant-editorial";
 
-    const { data: template } = await admin
+    let { data: template } = await admin
       .from("templates")
-      .select("id,base_state")
-      .eq("slug", slug.trim().toLowerCase())
+      .select("id,slug,base_state")
+      .eq("slug", requestedSlug.trim().toLowerCase())
       .single();
+
+    if (!template?.id || !template?.base_state) {
+      const fallback = await admin
+        .from("templates")
+        .select("id,slug,base_state")
+        .eq("slug", "elegant-editorial")
+        .single();
+      template = fallback.data ?? null;
+    }
 
     if (!template?.id || !template?.base_state) {
       redirect("/");
@@ -46,6 +55,7 @@ export default async function BuilderPage({ params, searchParams }: PageProps) {
         initialPartner1Name={null}
         initialPartner2Name={null}
         initialEventDate={null}
+        templateSlug={template.slug}
       />
     );
   }
@@ -76,7 +86,7 @@ export default async function BuilderPage({ params, searchParams }: PageProps) {
 
   const { data: template } = await admin
     .from("templates")
-    .select("base_state")
+    .select("slug,base_state")
     .eq("id", site.template_id)
     .single();
 
@@ -93,6 +103,7 @@ export default async function BuilderPage({ params, searchParams }: PageProps) {
       initialPartner1Name={site.partner1_name ?? null}
       initialPartner2Name={site.partner2_name ?? null}
       initialEventDate={site.event_date ?? null}
+      templateSlug={template?.slug ?? "elegant-editorial"}
     />
   );
 }

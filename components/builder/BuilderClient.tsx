@@ -1,7 +1,7 @@
 "use client";
 
 import { type ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
-import ElegantEditorial from "@/components/templates/ElegantEditorial";
+import { getTemplateConfig } from "@/lib/templates";
 import { useSiteState } from "@/hooks/useSiteState";
 import type { SiteState } from "@/types/database";
 import EditorBanner from "./EditorBanner";
@@ -18,6 +18,7 @@ type BuilderClientProps = {
   initialPartner1Name: string | null;
   initialPartner2Name: string | null;
   initialEventDate: string | null;
+  templateSlug: string;
 };
 
 type SelectedElement = {
@@ -78,6 +79,7 @@ export default function BuilderClient({
   initialPartner1Name,
   initialPartner2Name,
   initialEventDate,
+  templateSlug,
 }: BuilderClientProps) {
   const [dbSyncEnabled, setDbSyncEnabled] = useState(true);
 
@@ -117,6 +119,8 @@ export default function BuilderClient({
   const [isTogglingPublish, setIsTogglingPublish] = useState(false);
   const [isFirstPublishAttempt, setIsFirstPublishAttempt] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const templateConfig = getTemplateConfig(templateSlug);
+  const TemplateComponent = templateConfig.component;
 
   useEffect(() => {
     if (!toastMessage) return;
@@ -159,6 +163,8 @@ export default function BuilderClient({
       };
 
       maybeUpdateIfUnedited("hero-names", combinedNames);
+      maybeUpdateIfUnedited("hero-name-1", p1);
+      maybeUpdateIfUnedited("hero-name-2", p2);
       maybeUpdateIfUnedited("nav-monogram", monogram);
       maybeUpdateIfUnedited("footer-names", combinedNames);
       maybeUpdateIfUnedited("hero-date", longDate);
@@ -627,10 +633,11 @@ export default function BuilderClient({
         visible={!!selectedElement}
         onPreserveSelection={preserveSelection}
         elementStyles={selectedElement ? renderState.elements[selectedElement.key]?.styles : undefined}
+        colorSwatches={templateConfig.colorSwatches}
       />
 
       <div className="builder-canvas" ref={wrapperRef}>
-        <ElegantEditorial state={renderState} editable />
+        <TemplateComponent state={renderState} editable />
       </div>
 
       <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={onFilePicked} />

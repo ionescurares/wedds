@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import ElegantEditorial from "@/components/templates/ElegantEditorial";
+import { getTemplateComponent } from "@/lib/templates";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { isReservedSlug } from "@/lib/reserved-slugs";
 import type { SiteState } from "@/types/database";
@@ -20,7 +20,7 @@ async function getPublishedSiteBySlug(slug: string) {
   const admin = getSupabaseAdmin();
   const { data } = await admin
     .from("sites")
-    .select("id,state")
+    .select("id,state,template_id")
     .eq("slug", slug)
     .eq("status", "published")
     .maybeSingle();
@@ -71,5 +71,14 @@ export default async function PublicSitePage({ params }: PageProps) {
     notFound();
   }
 
-  return <ElegantEditorial state={site.state as SiteState} editable={false} siteId={site.id} />;
+  const state = site.state as SiteState;
+  const admin = getSupabaseAdmin();
+  const { data: template } = await admin
+    .from("templates")
+    .select("slug")
+    .eq("id", (site as { template_id?: string | null }).template_id ?? "")
+    .maybeSingle();
+  const templateSlug = template?.slug ?? state.templateId ?? "elegant-editorial";
+  const TemplateComponent = getTemplateComponent(templateSlug);
+  return <TemplateComponent state={state} editable={false} siteId={site.id} />;
 }

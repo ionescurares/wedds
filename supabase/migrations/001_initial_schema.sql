@@ -398,3 +398,96 @@ do update set
   thumbnail_url = excluded.thumbnail_url,
   base_state = excluded.base_state,
   is_active = excluded.is_active;
+
+insert into public.templates (id, slug, name, description, thumbnail_url, base_state, is_active)
+values (
+  '22222222-2222-4222-8222-222222222222',
+  'romantic-floral',
+  'Romantic Floral',
+  'Garden-romantic editorial spread. Split-screen hero, asymmetric photo layout, botanical greens and warm mauves.',
+  'https://images.unsplash.com/photo-1529636798458-92182e662485?w=800&h=900&fit=crop&q=80',
+  $$
+  {
+    "templateId": "romantic-floral",
+    "version": 1,
+    "meta": {
+      "partner1": "Elena",
+      "partner2": "Alexandru",
+      "date": "2026-09-20",
+      "slug": ""
+    },
+    "elements": {
+      "nav-monogram": {"text": "E &amp; A", "styles": {}},
+      "hero-label": {"text": "We're getting married", "styles": {}},
+      "hero-name-1": {"text": "Elena", "styles": {}},
+      "hero-name-2": {"text": "Alexandru", "styles": {}},
+      "hero-date": {"text": "September the Twentieth, Two Thousand Twenty-Six", "styles": {}},
+      "hero-venue": {"text": "Bucharest, Romania", "styles": {}},
+      "quote-text": {"text": "\"The best thing to hold onto in life is each other.\"", "styles": {}},
+      "story-label": {"text": "Our Story", "styles": {}},
+      "story-title": {"text": "A Love Written in the Stars", "styles": {}},
+      "story-body-1": {"text": "It started with a look across a crowded room and a conversation that lasted until sunrise. From that very first night, we knew something extraordinary had begun.", "styles": {}},
+      "story-body-2": {"text": "Through years of adventures, quiet mornings, late-night talks, and a thousand shared dreams, our love has grown into something we want to celebrate with the people who matter most.", "styles": {}},
+      "story-body-3": {"text": "Now, we invite you to join us as we say \"I do\" and begin the greatest adventure of all.", "styles": {}},
+      "story-sig": {"text": "Elena &amp; Alexandru", "styles": {}},
+      "details-label": {"text": "The Celebration", "styles": {}},
+      "details-title": {"text": "When &amp; Where", "styles": {}},
+      "ceremony-type": {"text": "Ceremony", "styles": {}},
+      "ceremony-name": {"text": "The Vows", "styles": {}},
+      "ceremony-time": {"text": "Saturday, September 20, 2026 at 4:00 PM", "styles": {}},
+      "ceremony-venue": {"text": "Biserica Sfantul Gheorghe, Calea Victoriei 47, Bucharest", "styles": {}},
+      "ceremony-dress": {"text": "Garden formal attire", "styles": {}},
+      "reception-type": {"text": "Reception", "styles": {}},
+      "reception-name": {"text": "Dinner &amp; Dancing", "styles": {}},
+      "reception-time": {"text": "7:00 PM until the last dance", "styles": {}},
+      "reception-venue": {"text": "Casa Vernescu, Calea Victoriei 133, Bucharest", "styles": {}},
+      "reception-note": {"text": "Open bar, live music, and endless celebration", "styles": {}},
+      "rsvp-label": {"text": "Kindly Respond", "styles": {}},
+      "rsvp-title": {"text": "Will You Join Us?", "styles": {}},
+      "rsvp-body": {"text": "We would be honored to have you celebrate this special day with us. Please let us know by August 15, 2026.", "styles": {}},
+      "footer-names": {"text": "Elena &amp; Alexandru", "styles": {}},
+      "footer-date": {"text": "20 . 09 . 2026", "styles": {}}
+    },
+    "images": {
+      "hero-main": {"src": "https://images.unsplash.com/photo-1519741497674-611481863552?w=900&h=1200&fit=crop&q=80", "alt": "Couple photo"},
+      "story-1": {"src": "https://images.unsplash.com/photo-1529636798458-92182e662485?w=800&h=900&fit=crop&q=80", "alt": "Story photo"}
+    },
+    "rsvpFields": [
+      {
+        "id": "dietary",
+        "type": "textarea",
+        "label": "Dietary Restrictions or Notes",
+        "placeholder": "Anything we should know...",
+        "required": false
+      }
+    ]
+  }
+  $$::jsonb,
+  true
+)
+on conflict (slug)
+do update set
+  name = excluded.name,
+  description = excluded.description,
+  thumbnail_url = excluded.thumbnail_url,
+  base_state = excluded.base_state,
+  is_active = excluded.is_active;
+
+update public.templates
+set base_state = jsonb_set(
+  base_state,
+  '{elements}',
+  coalesce(base_state->'elements', '{}'::jsonb) || '{
+    "rsvp-form-name-label": {"text": "Your Full Name", "styles": {}},
+    "rsvp-form-email-label": {"text": "Email Address", "styles": {}},
+    "rsvp-form-attending-label": {"text": "Will you be attending?", "styles": {}},
+    "rsvp-form-guests-label": {"text": "Number of Additional Guests", "styles": {}},
+    "rsvp-form-dietary-label": {"text": "Dietary Restrictions or Notes", "styles": {}},
+    "rsvp-accept-text": {"text": "Joyfully Accept", "styles": {}},
+    "rsvp-decline-text": {"text": "Regretfully Decline", "styles": {}},
+    "rsvp-submit-text": {"text": "Send Response", "styles": {}},
+    "rsvp-success-title": {"text": "Thank You", "styles": {}},
+    "rsvp-success-message": {"text": "We are overjoyed that you will celebrate with us.", "styles": {}}
+  }'::jsonb
+)
+where slug in ('romantic-floral', 'elegant-editorial');

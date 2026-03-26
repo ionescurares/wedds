@@ -117,6 +117,26 @@ do update set
   status = excluded.status,
   published_at = excluded.published_at;
 
+-- Ensure RSVP editable text keys exist on template base states
+update public.templates
+set base_state = jsonb_set(
+  base_state,
+  '{elements}',
+  coalesce(base_state->'elements', '{}'::jsonb) || '{
+    "rsvp-form-name-label": {"text": "Your Full Name", "styles": {}},
+    "rsvp-form-email-label": {"text": "Email Address", "styles": {}},
+    "rsvp-form-attending-label": {"text": "Will you be attending?", "styles": {}},
+    "rsvp-form-guests-label": {"text": "Number of Additional Guests", "styles": {}},
+    "rsvp-form-dietary-label": {"text": "Dietary Restrictions or Notes", "styles": {}},
+    "rsvp-accept-text": {"text": "Joyfully Accept", "styles": {}},
+    "rsvp-decline-text": {"text": "Regretfully Decline", "styles": {}},
+    "rsvp-submit-text": {"text": "Send Response", "styles": {}},
+    "rsvp-success-title": {"text": "Thank You", "styles": {}},
+    "rsvp-success-message": {"text": "We are overjoyed that you will celebrate with us.", "styles": {}}
+  }'::jsonb
+)
+where slug in ('romantic-floral', 'elegant-editorial');
+
 insert into public.rsvp_responses (site_id, guest_name, guest_email, attending, guest_count, data, notes, submitted_at)
 values
   ('22222222-2222-4222-8222-222222222222', 'Ana Ionescu', 'ana@example.com', 'yes', 2, '{"dietary":"Vegetarian"}'::jsonb, null, now() - interval '9 days'),
