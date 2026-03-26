@@ -85,11 +85,10 @@ function EditableImage({
             aria-label="Change photo"
           >
             <svg className={styles.imageChangeIcon} viewBox="0 0 24 24" aria-hidden="true">
-              <rect x="3" y="5" width="18" height="14" rx="2" ry="2" />
-              <circle cx="8.5" cy="10.5" r="1.5" />
-              <path d="M21 15l-5-5L5 21" />
+              <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+              <circle cx="12" cy="13" r="4" />
             </svg>
-            <span>Change</span>
+            <span>Replace</span>
           </button>
         </div>
       ) : null}
@@ -99,13 +98,13 @@ function EditableImage({
 }
 
 const ElegantEditorial = memo(function ElegantEditorial({ state, editable = false, siteId }: Props) {
-  const [attendance, setAttendance] = useState<"yes" | "no">("yes");
+  // null means "not selected yet" (so the attendance question is never preselected).
+  const [attendance, setAttendance] = useState<"yes" | "no" | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [duplicate, setDuplicate] = useState(false);
   const [shake, setShake] = useState(false);
-  const [showGuestCount, setShowGuestCount] = useState(false);
   const [formData, setFormData] = useState<Record<string, string>>({
     name: "",
     email: "",
@@ -113,14 +112,20 @@ const ElegantEditorial = memo(function ElegantEditorial({ state, editable = fals
   });
 
   const rsvpFields = useMemo(() => state.rsvpFields ?? [], [state.rsvpFields]);
+  const showFollowUps = attendance === "yes";
 
   const requiredMissing = useMemo(() => {
     if (!formData.name?.trim()) return true;
+    if (!attendance) return true;
+
+    // Follow-up questions are only required (if ever) when accepting.
+    if (!showFollowUps) return false;
+
     for (const field of rsvpFields) {
       if (field.required && !formData[field.id]?.trim()) return true;
     }
     return false;
-  }, [formData, rsvpFields]);
+  }, [attendance, formData, rsvpFields, showFollowUps]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -140,8 +145,10 @@ const ElegantEditorial = memo(function ElegantEditorial({ state, editable = fals
     setDuplicate(false);
 
     const customData: Record<string, string> = {};
-    for (const field of rsvpFields) {
-      if (formData[field.id]) customData[field.id] = formData[field.id];
+    if (showFollowUps) {
+      for (const field of rsvpFields) {
+        if (formData[field.id]) customData[field.id] = formData[field.id];
+      }
     }
 
     try {
@@ -152,7 +159,7 @@ const ElegantEditorial = memo(function ElegantEditorial({ state, editable = fals
           site_id: siteId,
           guest_name: formData.name.trim(),
           guest_email: formData.email?.trim() || null,
-          attending: attendance,
+          attending: attendance!,
           guest_count: attendance === "yes" ? 1 + Number(formData.guests || 0) : 0,
           data: customData,
         }),
@@ -479,7 +486,13 @@ const ElegantEditorial = memo(function ElegantEditorial({ state, editable = fals
           {!submitted ? (
             <form className={styles.rsvpForm} onSubmit={onSubmit}>
               <div className={styles.formGroup}>
-                <label>Your Full Name</label>
+                <EditableText
+                  state={state}
+                  textKey="rsvp-form-name-label"
+                  fallback="Your Full Name"
+                  editable={editable}
+                  as="label"
+                />
                 <input
                   value={formData.name}
                   onChange={(e) => setFormData((s) => ({ ...s, name: e.target.value }))}
@@ -488,7 +501,13 @@ const ElegantEditorial = memo(function ElegantEditorial({ state, editable = fals
                 />
               </div>
               <div className={styles.formGroup}>
-                <label>Email Address</label>
+                <EditableText
+                  state={state}
+                  textKey="rsvp-form-email-label"
+                  fallback="Email Address"
+                  editable={editable}
+                  as="label"
+                />
                 <input
                   type="email"
                   value={formData.email}
@@ -497,28 +516,53 @@ const ElegantEditorial = memo(function ElegantEditorial({ state, editable = fals
                 />
               </div>
               <div className={styles.formGroup}>
-                <label>Will you be attending?</label>
+                <EditableText
+                  state={state}
+                  textKey="rsvp-form-attending-label"
+                  fallback="Will you be attending?"
+                  editable={editable}
+                  as="label"
+                />
                 <div className={styles.attendanceOptions}>
                   <button
                     type="button"
                     className={`${styles.attendanceOption} ${attendance === "yes" ? styles.attendanceChecked : ""}`}
-                    onClick={() => { setAttendance("yes"); setShowGuestCount(true); }}
+                    onClick={editable ? undefined : () => setAttendance("yes")}
                   >
-                    Joyfully Accept
+                    <EditableText
+                      state={state}
+                      textKey="rsvp-accept-text"
+                      fallback="Joyfully Accept"
+                      editable={editable}
+                    />
                   </button>
                   <button
                     type="button"
                     className={`${styles.attendanceOption} ${attendance === "no" ? styles.attendanceChecked : ""}`}
-                    onClick={() => { setAttendance("no"); setShowGuestCount(false); }}
+                    onClick={editable ? undefined : () => setAttendance("no")}
                   >
-                    Regretfully Decline
+                    <EditableText
+                      state={state}
+                      textKey="rsvp-decline-text"
+                      fallback="Regretfully Decline"
+                      editable={editable}
+                    />
                   </button>
                 </div>
               </div>
 
-              <div className={`${styles.guestCount} ${showGuestCount ? styles.guestCountOpen : ""}`}>
+              <div
+                className={`${styles.guestCount} ${showFollowUps ? styles.guestCountOpen : ""}`}
+                aria-hidden={!showFollowUps}
+              >
                 <div className={styles.formGroup}>
-                  <label>Number of Additional Guests</label>
+                  <EditableText
+                    state={state}
+                    textKey="rsvp-form-guests-label"
+                    fallback="Number of Additional Guests"
+                    editable={editable}
+                    as="label"
+                  />
                   <select
                     value={formData.guests}
                     onChange={(e) => setFormData((s) => ({ ...s, guests: e.target.value }))}
@@ -532,66 +576,110 @@ const ElegantEditorial = memo(function ElegantEditorial({ state, editable = fals
                 </div>
               </div>
 
-              {rsvpFields.map((field) => (
-                <div key={field.id} className={styles.formGroup}>
-                  <label>{field.label}</label>
-                  {field.type === "textarea" ? (
-                    <textarea
-                      value={formData[field.id] ?? ""}
-                      onChange={(e) => setFormData((s) => ({ ...s, [field.id]: e.target.value }))}
-                      placeholder={field.placeholder}
-                      required={field.required}
-                    />
-                  ) : field.type === "select" ? (
-                    <select
-                      value={formData[field.id] ?? ""}
-                      onChange={(e) => setFormData((s) => ({ ...s, [field.id]: e.target.value }))}
-                      required={field.required}
-                    >
-                      <option value="">Select...</option>
-                      {field.options?.map((opt) => (
-                        <option key={opt} value={opt}>{opt}</option>
-                      ))}
-                    </select>
-                  ) : field.type === "radio" ? (
-                    <div className={styles.attendanceOptions}>
-                      {field.options?.map((opt) => (
-                        <button
-                          key={opt}
-                          type="button"
-                          className={`${styles.attendanceOption} ${formData[field.id] === opt ? styles.attendanceChecked : ""}`}
-                          onClick={() => setFormData((s) => ({ ...s, [field.id]: opt }))}
+              {showFollowUps
+                ? rsvpFields.map((field) => (
+                    <div key={field.id} className={styles.formGroup}>
+                      <EditableText
+                        state={state}
+                        textKey={field.id === "dietary" ? "rsvp-form-dietary-label" : `rsvp-custom-${field.id}-label`}
+                        fallback={field.id === "dietary" ? "Dietary Restrictions or Notes" : field.label}
+                        editable={editable}
+                        as="label"
+                      />
+                      {field.type === "textarea" ? (
+                        <textarea
+                          value={formData[field.id] ?? ""}
+                          onChange={(e) =>
+                            setFormData((s) => ({ ...s, [field.id]: e.target.value }))
+                          }
+                          placeholder={field.placeholder}
+                          required={field.required}
+                        />
+                      ) : field.type === "select" ? (
+                        <select
+                          value={formData[field.id] ?? ""}
+                          onChange={(e) =>
+                            setFormData((s) => ({ ...s, [field.id]: e.target.value }))
+                          }
+                          required={field.required}
                         >
-                          {opt}
-                        </button>
-                      ))}
+                          <option value="">Select...</option>
+                          {field.options?.map((opt) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
+                      ) : field.type === "radio" ? (
+                        <div className={styles.attendanceOptions}>
+                          {field.options?.map((opt, optIdx) => (
+                            <button
+                              key={opt}
+                              type="button"
+                              className={`${styles.attendanceOption} ${
+                                formData[field.id] === opt ? styles.attendanceChecked : ""
+                              }`}
+                              onClick={
+                                editable
+                                  ? undefined
+                                  : () => setFormData((s) => ({ ...s, [field.id]: opt }))
+                              }
+                            >
+                              <EditableText
+                                state={state}
+                                textKey={`rsvp-custom-${field.id}-opt-${optIdx}`}
+                                fallback={opt}
+                                editable={editable}
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <input
+                          value={formData[field.id] ?? ""}
+                          onChange={(e) =>
+                            setFormData((s) => ({ ...s, [field.id]: e.target.value }))
+                          }
+                          placeholder={field.placeholder}
+                          required={field.required}
+                        />
+                      )}
                     </div>
-                  ) : (
-                    <input
-                      value={formData[field.id] ?? ""}
-                      onChange={(e) => setFormData((s) => ({ ...s, [field.id]: e.target.value }))}
-                      placeholder={field.placeholder}
-                      required={field.required}
-                    />
-                  )}
-                </div>
-              ))}
+                  ))
+                : null}
 
               {submitError && <p className={styles.formError}>{submitError}</p>}
 
               <button
                 className={`${styles.submitBtn} ${shake ? styles.shake : ""}`}
-                type="submit"
+                type={editable ? "button" : "submit"}
                 disabled={submitting}
               >
-                {submitting ? "Sending..." : "Send Response"}
+                <EditableText
+                  state={state}
+                  textKey="rsvp-submit-text"
+                  fallback="Send Response"
+                  editable={editable}
+                />
               </button>
             </form>
           ) : (
             <div className={`${styles.rsvpSuccess} ${styles.rsvpSuccessShow}`}>
               <div className={styles.checkmark}>{checkIcon}</div>
-              <h3>Thank You</h3>
-              <p>{successMessage}</p>
+              <EditableText
+                state={state}
+                textKey="rsvp-success-title"
+                fallback="Thank You"
+                editable={editable}
+                as="h3"
+              />
+              <EditableText
+                state={state}
+                textKey="rsvp-success-message"
+                fallback={successMessage}
+                editable={editable}
+                as="p"
+              />
             </div>
           )}
         </div>

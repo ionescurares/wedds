@@ -1,0 +1,185 @@
+.page {
+  --mauve: #9b6b7a;
+  --mauve-light: #b88a96;
+  --mauve-deep: #7a5566;
+  --mauve-pale: #ecd8de;
+  --blush: #f5e6e0;
+  --blush-warm: #eeddd5;
+  --peach: #e8b4a2;
+  --peach-light: #f2d0c4;
+  --sage: #8ea882;
+  --sage-deep: #6a8760;
+  --sage-light: #c5d6bd;
+  --sage-muted: #a3bf98;
+  --olive: #556b4a;
+  --olive-soft: #738f66;
+  --cream: #fff9f4;
+  --linen: #fef3ec;
+  --taupe: #6b5d56;
+  --taupe-light: #907e74;
+  --taupe-dark: #4a3f3a;
+  --display: "Playfair Display", serif;
+  --body: "Karla", sans-serif;
+  font-family: var(--body);
+  background: var(--cream);
+  color: var(--taupe-dark);
+}
+
+.image { width: 100%; height: 100%; object-fit: cover; display: block; }
+.editableImageRoot { isolation: isolate; position: relative; }
+.editableImageRoot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  transition: background .3s;
+  pointer-events: none;
+  z-index: 1;
+}
+.editableImageRoot:hover::after,
+.editableImageRoot:focus-within::after { background: rgba(0, 0, 0, .25); }
+.imageChangeBar {
+  position: absolute;
+  top: 80%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 6;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.imageChangeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .6rem 1rem;
+  border: 1px solid rgba(255,255,255,.45);
+  border-radius: 8px;
+  background: rgba(0,0,0,.55);
+  color: #fff;
+  font-size: .7rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(.8);
+  transition: opacity .2s ease, transform .3s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.editableImageRoot:hover .imageChangeBtn,
+.editableImageRoot:focus-within .imageChangeBtn {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+.imageChangeIcon { width: 16px; height: 16px; stroke: #fff; fill: none; stroke-width: 1.5; }
+
+.hero { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; }
+.heroImage { min-height: 100vh; }
+.heroContent { position: relative; display: flex; flex-direction: column; justify-content: center; padding: 4rem 5rem; background: linear-gradient(160deg, var(--cream) 0%, var(--blush) 60%, var(--blush-warm) 100%); overflow: hidden; }
+.heroLabel { font-size: .7rem; font-weight: 500; letter-spacing: .35em; text-transform: uppercase; color: var(--mauve); margin-bottom: 2.5rem; }
+.heroName { font-family: var(--display); font-style: italic; font-size: clamp(3rem, 5vw, 4.5rem); font-weight: 400; line-height: 1.15; color: var(--taupe-dark); }
+.heroAmp { font-family: var(--display); font-style: italic; color: var(--mauve); font-size: 1.4rem; margin: .25rem 0; }
+.heroLine { width: 60px; height: 2px; background: linear-gradient(to right, var(--mauve), var(--peach)); margin: 2rem 0; }
+.heroDate { font-family: var(--display); font-size: 1.3rem; font-style: italic; color: var(--taupe); display: block; position: relative; z-index: 2; }
+.heroVenue { font-size: .85rem; color: var(--taupe-light); margin-top: .4rem; }
+
+.heroFloralTr, .heroFloralBl { position: absolute; pointer-events: none; }
+.heroFloralTr { top: -20px; right: -20px; width: 280px; height: 280px; opacity: .7; }
+.heroFloralBl { bottom: -10px; left: -20px; width: 200px; height: 200px; opacity: .5; transform: scale(-1); }
+.petal1, .petal2 { position: absolute; opacity: .35; color: var(--peach); pointer-events: none; animation: floatPetal 8s ease-in-out infinite; }
+.petal1 { top: 20%; left: 15%; width: 18px; height: 12px; }
+.petal2 { bottom: 30%; right: 25%; width: 14px; height: 10px; color: var(--mauve-light); animation-delay: 1.5s; }
+
+.quoteBand { position: relative; padding: 3rem 2rem; background: linear-gradient(135deg, var(--sage-light) 0%, var(--sage-muted) 50%, var(--sage) 100%); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.quoteText { font-family: var(--display); font-style: italic; font-size: 1.3rem; color: #fff; text-align: center; line-height: 1.6; max-width: 700px; position: relative; z-index: 1; }
+.quoteFloralLeft, .quoteFloralRight { position: absolute; width: 200px; height: 140px; opacity: .25; pointer-events: none; }
+.quoteFloralLeft { left: -30px; top: -20px; }
+.quoteFloralRight { right: -30px; bottom: -20px; transform: scale(-1); }
+
+.story { position: relative; padding: 7rem 0; background: linear-gradient(180deg, var(--cream) 0%, var(--linen) 40%, var(--cream) 100%); overflow: hidden; }
+.storyHeader { text-align: center; padding: 0 2rem; margin-bottom: 5rem; position: relative; z-index: 1; }
+.storyLabel { font-size: .65rem; font-weight: 600; letter-spacing: .4em; text-transform: uppercase; color: var(--mauve); margin-bottom: 1rem; }
+.storyTitle { font-family: var(--display); font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 400; color: var(--taupe-dark); }
+.storyDivider { width: 180px; height: 30px; margin: 1.5rem auto 0; display: block; }
+.storyRow { display: grid; grid-template-columns: 1.1fr .9fr; max-width: 1300px; margin: 0 auto; position: relative; z-index: 1; }
+.storyImage { min-height: 500px; box-shadow: 0 15px 50px rgba(74, 63, 58, .12); }
+.storyText { display: flex; flex-direction: column; justify-content: center; padding: 3rem 4rem 3rem 3rem; }
+.storyText p { font-size: 1.05rem; line-height: 2; color: var(--taupe); margin-bottom: 1.5rem; }
+.storySig { font-family: var(--display); font-style: italic; font-size: 1.4rem; color: var(--mauve); margin-top: 1rem; }
+.storyFloralR, .storyFloralL { position: absolute; pointer-events: none; }
+.storyFloralR { right: -30px; top: 20%; width: 180px; height: 300px; opacity: .4; }
+.storyFloralL { left: -30px; bottom: 10%; width: 150px; height: 250px; opacity: .35; transform: scaleX(-1); }
+
+.details { position: relative; padding: 7rem 2rem; background: linear-gradient(180deg, var(--blush-warm) 0%, var(--blush) 30%, #f9ede9 70%, var(--blush-warm) 100%); overflow: hidden; }
+.detailsInner { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+.detailsHeader { text-align: center; margin-bottom: 4rem; }
+.detailsLabel { font-size: .65rem; font-weight: 600; letter-spacing: .4em; text-transform: uppercase; color: var(--mauve); margin-bottom: 1rem; }
+.detailsTitle { font-family: var(--display); font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 400; color: var(--taupe-dark); }
+.detailsFloralTl, .detailsFloralBr { position: absolute; width: 220px; height: 220px; opacity: .35; pointer-events: none; }
+.detailsFloralTl { top: 40px; left: -10px; }
+.detailsFloralBr { bottom: 40px; right: -10px; transform: scale(-1); }
+
+.eventCards { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+.eventCard { position: relative; background: rgba(255, 255, 255, .75); backdrop-filter: blur(8px); padding: 3rem; border: 1px solid rgba(155, 107, 122, .12); border-radius: 4px; box-shadow: 0 4px 20px rgba(74, 63, 58, .05); }
+.eventAccent { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(to right, var(--mauve), var(--mauve-light), var(--peach-light)); }
+.eventIcon { width: 50px; height: 50px; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; background: var(--mauve-pale); border-radius: 50%; }
+.eventIcon svg { width: 22px; height: 22px; stroke: var(--mauve); fill: none; stroke-width: 1.4; }
+.eventType { font-size: .6rem; font-weight: 600; letter-spacing: .35em; text-transform: uppercase; color: var(--mauve); margin-bottom: .5rem; }
+.eventName { font-family: var(--display); font-size: 1.8rem; font-weight: 500; color: var(--taupe-dark); margin-bottom: 1.5rem; }
+.eventDetail { display: flex; align-items: flex-start; gap: .75rem; margin-bottom: .8rem; font-size: .9rem; color: var(--taupe); line-height: 1.6; }
+.eventDetail svg { width: 16px; height: 16px; margin-top: 3px; stroke: var(--mauve-light); fill: none; stroke-width: 1.5; flex-shrink: 0; }
+
+.rsvp { position: relative; padding: 7rem 2rem; background: linear-gradient(160deg, var(--olive-soft) 0%, var(--olive) 40%, var(--sage-deep) 100%); color: var(--sage-light); overflow: hidden; }
+.rsvpInner { max-width: 560px; margin: 0 auto; position: relative; z-index: 1; text-align: center; }
+.rsvpFloralTl, .rsvpFloralBr { position: absolute; width: 200px; height: 200px; opacity: .2; pointer-events: none; }
+.rsvpFloralTl { top: -10px; left: -20px; }
+.rsvpFloralBr { bottom: -10px; right: -20px; transform: scale(-1); }
+.rsvpPetal1, .rsvpPetal2 { position: absolute; color: var(--sage-light); opacity: .15; pointer-events: none; animation: floatPetal 8s ease-in-out infinite; }
+.rsvpPetal1 { top: 15%; right: 12%; width: 20px; height: 14px; }
+.rsvpPetal2 { bottom: 20%; left: 8%; width: 16px; height: 10px; color: var(--peach); animation-delay: 2s; }
+.rsvpLabel { font-size: .65rem; font-weight: 600; letter-spacing: .4em; text-transform: uppercase; color: var(--sage-muted); margin-bottom: 1rem; }
+.rsvpTitle { font-family: var(--display); font-size: clamp(2rem, 4vw, 3.2rem); color: #fff; margin-bottom: .75rem; }
+.rsvpSubtitle { font-size: .95rem; line-height: 1.8; margin-bottom: 3rem; opacity: .85; }
+
+.rsvpForm { text-align: left; display: flex; flex-direction: column; gap: 1.75rem; }
+.formGroup { display: flex; flex-direction: column; gap: .5rem; }
+.formGroup label { font-size: .65rem; font-weight: 600; letter-spacing: .15em; text-transform: uppercase; color: var(--sage-muted); }
+.formGroup input, .formGroup textarea, .formGroup select { font-family: var(--body); font-size: .95rem; color: #fff; background: rgba(255,255,255,.08); border: 1px solid rgba(197,214,189,.25); border-radius: 4px; padding: .85rem 1rem; outline: none; }
+.formGroup textarea { min-height: 80px; resize: vertical; }
+.formGroup select option { background: var(--olive); color: #fff; }
+.attChoices { display: flex; gap: 1rem; margin-top: .4rem; }
+.attChoice { flex: 1; border: 1px solid rgba(197,214,189,.25); border-radius: 6px; background: rgba(255,255,255,.05); color: var(--sage-light); padding: 1.3rem 1rem; text-align: center; cursor: pointer; font-family: var(--display); font-size: .85rem; }
+.attChecked { border-color: var(--sage-muted); background: rgba(163,191,152,.15); }
+.guestCount { overflow: hidden; max-height: 0; opacity: 0; transition: max-height .5s ease, opacity .4s, margin .4s; margin-top: 0; }
+.guestCountOpen { max-height: 900px; opacity: 1; margin-top: 1.75rem; }
+.submitBtn { margin-top: .5rem; font-family: var(--display); font-size: .95rem; letter-spacing: .15em; color: var(--olive); background: var(--sage-light); border: none; border-radius: 4px; padding: 1.1rem 3rem; cursor: pointer; align-self: center; }
+.formError { color: #ffe0df; font-size: .85rem; }
+.rsvpSuccess { display: none; text-align: center; padding: 2rem 0; }
+.rsvpSuccessShow { display: block; animation: fadeUp .8s ease; }
+.rsvpSuccess h3 { font-family: var(--display); font-size: 2.5rem; color: #fff; margin-bottom: .75rem; }
+
+.footer { text-align: center; padding: 3.5rem 2rem; background: var(--taupe-dark); position: relative; overflow: hidden; }
+.footerNames { font-family: var(--display); font-style: italic; font-size: 1.6rem; color: var(--peach-light); margin-bottom: .3rem; position: relative; z-index: 1; display: block; }
+.footerDate { font-size: .7rem; letter-spacing: .25em; text-transform: uppercase; color: var(--taupe-light); position: relative; z-index: 1; display: block; }
+.footerFloral { position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); width: 300px; height: 80px; opacity: .15; pointer-events: none; }
+
+@keyframes floatPetal {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-10px) rotate(6deg); }
+  66% { transform: translateY(-4px) rotate(-4deg); }
+}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; min-height: auto; }
+  .heroImage { min-height: 55vh; }
+  .heroContent { padding: 3rem 2rem; }
+  .storyRow { grid-template-columns: 1fr; gap: 2rem; }
+  .storyImage { min-height: 350px; }
+  .storyText { padding: 2rem; }
+  .eventCards { grid-template-columns: 1fr; }
+  .attChoices { flex-direction: column; }
+}

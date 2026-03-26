@@ -9,6 +9,7 @@ type FloatingToolbarProps = {
   visible: boolean;
   onPreserveSelection?: () => void;
   elementStyles?: Record<string, string>;
+  colorSwatches: string[];
 };
 
 const FONT_OPTIONS = [
@@ -25,8 +26,6 @@ const FONT_OPTIONS = [
   "Josefin Sans",
   "Raleway",
 ];
-
-const COLOR_SWATCHES = ["#FDFCFA", "#D4C8A8", "#B8A67E", "#C4BAA8", "#7A7A5E", "#2C2C28", "#1A1A17"];
 
 type ToolbarState = {
   fontFamily: string;
@@ -88,6 +87,7 @@ export default function FloatingToolbar({
   visible,
   onPreserveSelection,
   elementStyles,
+  colorSwatches,
 }: FloatingToolbarProps) {
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [state, setState] = useState<ToolbarState>({
@@ -267,7 +267,7 @@ export default function FloatingToolbar({
       </div>
 
       <div className="builder-toolbar-row">
-        {COLOR_SWATCHES.map((swatch) => (
+        {colorSwatches.map((swatch) => (
           <button
             key={swatch}
             className="builder-swatch"
