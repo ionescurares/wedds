@@ -465,7 +465,7 @@ export default function PublishModal({
                     id="pm-name"
                     className={styles.input}
                     type="text"
-                    placeholder="Rareș & Claudia"
+                    placeholder="Rareș Ionescu"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     autoComplete="name"
