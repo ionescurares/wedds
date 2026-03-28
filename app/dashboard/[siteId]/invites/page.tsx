@@ -35,7 +35,7 @@ export default async function InvitesPage({ params }: PageProps) {
     .order("created_at", { ascending: false });
 
   const invitationIds = (invitations ?? []).map((inv) => inv.id);
-  let rsvpMap: Record<string, unknown> = {};
+  const rsvpMap: Record<string, unknown> = {};
   if (invitationIds.length > 0) {
     const { data: rsvps } = await admin
       .from("rsvp_responses")

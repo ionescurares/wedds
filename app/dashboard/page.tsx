@@ -27,7 +27,7 @@ export default async function DashboardPage() {
 
   const admin = getSupabaseAdmin();
   const siteIds = sites.map((s) => s.id);
-  let inviteStats: Record<string, { total: number; responded: number }> = {};
+  const inviteStats: Record<string, { total: number; responded: number }> = {};
 
   if (siteIds.length > 0) {
     const { data: invitations } = await admin
