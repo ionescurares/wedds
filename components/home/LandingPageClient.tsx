@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { createClient } from "@/lib/supabase/client";
 import styles from "./LandingPageClient.module.css";
 
 type TemplateCard = {
@@ -139,8 +140,80 @@ function PlaceholderPreview({ template }: { template: TemplateCard }) {
   );
 }
 
+type AuthMode = "login" | "signup";
+
 export default function LandingPageClient({ templates }: Props) {
   const [openFaq, setOpenFaq] = useState(0);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<AuthMode>("login");
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
+  const backdropRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setUserEmail(data.user?.email ?? null);
+      setAuthReady(true);
+    });
+  }, []);
+
+  const openLogin = () => {
+    setAuthMode("login");
+    setEmail("");
+    setPassword("");
+    setDisplayName("");
+    setAuthError("");
+    setAuthOpen(true);
+  };
+
+  const closeAuth = () => setAuthOpen(false);
+
+  const handleAuth = async (e: FormEvent) => {
+    e.preventDefault();
+    setAuthError("");
+    if (!email.trim()) { setAuthError("Email is required."); return; }
+    if (password.length < 6) { setAuthError("Password must be at least 6 characters."); return; }
+    if (authMode === "signup" && !displayName.trim()) { setAuthError("Display name is required."); return; }
+
+    setAuthLoading(true);
+    try {
+      const supabase = createClient();
+      if (authMode === "signup") {
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: { data: { display_name: displayName.trim() } },
+        });
+        if (error) throw error;
+        if (!data.user) throw new Error("Signup succeeded but no user returned.");
+        setUserEmail(data.user.email ?? email.trim());
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+        if (error) throw error;
+        setUserEmail(data.user?.email ?? email.trim());
+      }
+      closeAuth();
+    } catch (err) {
+      setAuthError(err instanceof Error ? err.message : "Authentication failed.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setUserEmail(null);
+  };
 
   const toggleFaq = useCallback((i: number) => {
     setOpenFaq((prev) => (prev === i ? -1 : i));
@@ -163,11 +236,107 @@ export default function LandingPageClient({ templates }: Props) {
           <button className={`${styles.navLink} ${styles.navLinkDesktop}`} onClick={() => scrollTo("faq")}>
             Întrebări
           </button>
-          <button className={styles.navCta} onClick={() => scrollTo("templates")}>
-            Începe acum
-          </button>
+          {authReady && userEmail ? (
+            <>
+              <Link href="/dashboard" className={styles.navCta}>
+                Dashboard
+              </Link>
+              <button className={styles.navLogout} onClick={handleLogout} type="button">
+                Log Out
+              </button>
+            </>
+          ) : authReady ? (
+            <>
+              <button className={styles.navLink} onClick={openLogin} type="button">
+                Log In
+              </button>
+              <button className={styles.navCta} onClick={() => scrollTo("templates")}>
+                Începe acum
+              </button>
+            </>
+          ) : (
+            <button className={styles.navCta} onClick={() => scrollTo("templates")}>
+              Începe acum
+            </button>
+          )}
         </div>
       </nav>
+
+      {/* AUTH MODAL */}
+      {authOpen && (
+        <div
+          className={styles.authBackdrop}
+          ref={backdropRef}
+          onClick={(e) => { if (e.target === backdropRef.current) closeAuth(); }}
+        >
+          <div className={styles.authCard}>
+            <button type="button" className={styles.authClose} onClick={closeAuth} aria-label="Close">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+            <h2 className={styles.authHeading}>
+              {authMode === "signup" ? "Create your account" : "Welcome back"}
+            </h2>
+            <p className={styles.authSubtext}>
+              {authMode === "signup"
+                ? "Sign up to manage your wedding sites."
+                : "Log in to access your dashboard."}
+            </p>
+            <form className={styles.authForm} onSubmit={handleAuth}>
+              {authMode === "signup" && (
+                <div className={styles.authField}>
+                  <label className={styles.authLabel} htmlFor="hp-name">Display name</label>
+                  <input
+                    id="hp-name"
+                    className={styles.authInput}
+                    type="text"
+                    placeholder="Rareș Ionescu"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    autoComplete="name"
+                  />
+                </div>
+              )}
+              <div className={styles.authField}>
+                <label className={styles.authLabel} htmlFor="hp-email">Email</label>
+                <input
+                  id="hp-email"
+                  className={styles.authInput}
+                  type="email"
+                  placeholder="hello@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                />
+              </div>
+              <div className={styles.authField}>
+                <label className={styles.authLabel} htmlFor="hp-pass">Password</label>
+                <input
+                  id="hp-pass"
+                  className={styles.authInput}
+                  type="password"
+                  placeholder="Min 6 characters"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete={authMode === "signup" ? "new-password" : "current-password"}
+                />
+              </div>
+              {authError && <p className={styles.authError}>{authError}</p>}
+              <button type="submit" className={styles.authPrimaryBtn} disabled={authLoading}>
+                {authLoading ? "Please wait..." : authMode === "signup" ? "Sign Up" : "Log In"}
+              </button>
+              <button
+                type="button"
+                className={styles.authToggle}
+                onClick={() => { setAuthMode(authMode === "login" ? "signup" : "login"); setAuthError(""); }}
+              >
+                {authMode === "login" ? "Don't have an account? Sign up" : "Already have an account? Log in"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* HERO */}
       <section className={styles.hero}>

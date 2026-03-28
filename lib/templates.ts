@@ -3,10 +3,16 @@ import RomanticFloral from "@/components/templates/RomanticFloral";
 import type { ComponentType } from "react";
 import type { SiteState } from "@/types/database";
 
+export type InvitationContext = {
+  id: string;
+  guestNames: string[];
+};
+
 export type TemplateComponentProps = {
   state: SiteState;
   editable?: boolean;
   siteId?: string;
+  invitation?: InvitationContext;
 };
 
 export type TemplateComponent = ComponentType<TemplateComponentProps>;

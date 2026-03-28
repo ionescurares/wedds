@@ -24,6 +24,7 @@ export type DashboardSite = {
 type Props = {
   initialSites: DashboardSite[];
   userEmail: string;
+  inviteStats?: Record<string, { total: number; responded: number }>;
 };
 
 function toRelativeTime(value: string): string {
@@ -53,7 +54,7 @@ function formatEventDate(value: string | null): string {
   }).format(parsed);
 }
 
-export default function DashboardClient({ initialSites, userEmail }: Props) {
+export default function DashboardClient({ initialSites, userEmail, inviteStats = {} }: Props) {
   const [sites, setSites] = useState(initialSites);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -238,6 +239,14 @@ export default function DashboardClient({ initialSites, userEmail }: Props) {
                   <span className={styles.muted}>No RSVPs yet</span>
                 )}
 
+                {inviteStats[site.id] && inviteStats[site.id].total > 0 && (
+                  <div className={styles.rsvpStats}>
+                    <span className={styles.rsvpStatMuted}>
+                      {inviteStats[site.id].total} invitation{inviteStats[site.id].total !== 1 ? "s" : ""}, {inviteStats[site.id].responded} responded
+                    </span>
+                  </div>
+                )}
+
                 <div className={styles.row}>
                   <Link href={`/builder/${site.id}`} className={styles.secondaryBtn}>
                     Edit
@@ -245,6 +254,10 @@ export default function DashboardClient({ initialSites, userEmail }: Props) {
 
                   <Link href={`/dashboard/${site.id}/guests`} className={styles.secondaryBtn}>
                     Guests
+                  </Link>
+
+                  <Link href={`/dashboard/${site.id}/invites`} className={styles.secondaryBtn}>
+                    Invitations
                   </Link>
 
                   <button

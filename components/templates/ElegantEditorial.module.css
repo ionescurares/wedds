@@ -161,6 +161,13 @@
 .rsvp .sectionLabel { color: var(--gold-light); }
 .rsvp .sectionLabel::before { background: var(--gold); }
 .rsvp .sectionTitle { color: var(--warm-white); }
+.rsvpGreeting {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--warm-white);
+  margin: 0;
+}
 .rsvpBody { font-size: 0.95rem; color: var(--stone); line-height: 1.7; max-width: 480px; }
 .rsvpForm { margin-top: 3rem; display: flex; flex-direction: column; gap: 2rem; }
 .formGroup { display: flex; flex-direction: column; gap: 0.5rem; }

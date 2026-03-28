@@ -9,12 +9,14 @@ import {
   useState,
 } from "react";
 import type { SiteState } from "@/types/database";
+import type { InvitationContext } from "@/lib/templates";
 import styles from "./RomanticFloral.module.css";
 
 type Props = {
   state: SiteState;
   editable?: boolean;
   siteId?: string;
+  invitation?: InvitationContext;
 };
 
 type EditableTextProps = {
@@ -97,16 +99,27 @@ function EditableImage({
   );
 }
 
-const RomanticFloral = memo(function RomanticFloral({ state, editable = false, siteId }: Props) {
+function formatGuestGreeting(names: string[]): string {
+  if (names.length === 1) return `Dear ${names[0]},`;
+  if (names.length === 2) return `Dear ${names[0]} & ${names[1]},`;
+  return `Dear ${names.slice(0, -1).join(", ")} & ${names[names.length - 1]},`;
+}
+
+const RomanticFloral = memo(function RomanticFloral({ state, editable = false, siteId, invitation }: Props) {
   const [attendance, setAttendance] = useState<"yes" | "no" | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [duplicate, setDuplicate] = useState(false);
-  const [formData, setFormData] = useState<Record<string, string>>({
-    name: "",
-    email: "",
-    guests: "0",
+  const [formData, setFormData] = useState<Record<string, string>>(() => {
+    const defaultGuests = invitation
+      ? String(Math.max(0, invitation.guestNames.length - 1))
+      : "0";
+    return {
+      name: invitation?.guestNames[0] ?? "",
+      email: "",
+      guests: defaultGuests,
+    };
   });
 
   const rsvpFields = useMemo(() => state.rsvpFields ?? [], [state.rsvpFields]);
@@ -157,6 +170,7 @@ const RomanticFloral = memo(function RomanticFloral({ state, editable = false, s
           attending: attendance!,
           guest_count: attendance === "yes" ? 1 + Number(formData.guests || 0) : 0,
           data: customData,
+          ...(invitation ? { invitation_id: invitation.id } : {}),
         }),
       });
       const json = await res.json();
@@ -267,7 +281,18 @@ const RomanticFloral = memo(function RomanticFloral({ state, editable = false, s
         <div className={styles.rsvpInner}>
           <EditableText state={state} textKey="rsvp-label" fallback="Kindly Respond" editable={editable} className={styles.rsvpLabel} />
           <EditableText state={state} textKey="rsvp-title" fallback="Will You Join Us?" editable={editable} as="h2" className={styles.rsvpTitle} />
-          <EditableText state={state} textKey="rsvp-body" fallback="We would be honored to have you celebrate this special day with us. Please let us know by August 15, 2026." editable={editable} as="p" className={styles.rsvpSubtitle} />
+          {invitation ? (
+            <>
+              <p className={styles.rsvpGreeting}>
+                {formatGuestGreeting(invitation.guestNames)}
+              </p>
+              <p className={styles.rsvpSubtitle}>
+                We would be so honored to have you celebrate with us.
+              </p>
+            </>
+          ) : (
+            <EditableText state={state} textKey="rsvp-body" fallback="We would be honored to have you celebrate this special day with us. Please let us know by August 15, 2026." editable={editable} as="p" className={styles.rsvpSubtitle} />
+          )}
           {!submitted ? (
             <form className={styles.rsvpForm} onSubmit={onSubmit}>
               <div className={styles.formGroup}>
