@@ -19,6 +19,17 @@ export type RsvpResponse = {
   data: Record<string, string>;
   submitted_at: string;
   notes: string | null;
+  invitation_id: string | null;
+};
+
+export type Invitation = {
+  id: string;
+  site_id: string;
+  code: string;
+  guest_names: string[];
+  status: "pending" | "responded";
+  viewed_at: string | null;
+  created_at: string;
 };
 
 export type SiteState = {

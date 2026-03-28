@@ -9,12 +9,14 @@ import {
   useState,
 } from "react";
 import type { SiteState } from "@/types/database";
+import type { InvitationContext } from "@/lib/templates";
 import styles from "./ElegantEditorial.module.css";
 
 type Props = {
   state: SiteState;
   editable?: boolean;
   siteId?: string;
+  invitation?: InvitationContext;
 };
 
 type EditableTextProps = {
@@ -97,18 +99,28 @@ function EditableImage({
   );
 }
 
-const ElegantEditorial = memo(function ElegantEditorial({ state, editable = false, siteId }: Props) {
-  // null means "not selected yet" (so the attendance question is never preselected).
+function formatGuestGreeting(names: string[]): string {
+  if (names.length === 1) return `Dear ${names[0]},`;
+  if (names.length === 2) return `Dear ${names[0]} & ${names[1]},`;
+  return `Dear ${names.slice(0, -1).join(", ")} & ${names[names.length - 1]},`;
+}
+
+const ElegantEditorial = memo(function ElegantEditorial({ state, editable = false, siteId, invitation }: Props) {
   const [attendance, setAttendance] = useState<"yes" | "no" | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [duplicate, setDuplicate] = useState(false);
   const [shake, setShake] = useState(false);
-  const [formData, setFormData] = useState<Record<string, string>>({
-    name: "",
-    email: "",
-    guests: "0",
+  const [formData, setFormData] = useState<Record<string, string>>(() => {
+    const defaultGuests = invitation
+      ? String(Math.max(0, invitation.guestNames.length - 1))
+      : "0";
+    return {
+      name: invitation?.guestNames[0] ?? "",
+      email: "",
+      guests: defaultGuests,
+    };
   });
 
   const rsvpFields = useMemo(() => state.rsvpFields ?? [], [state.rsvpFields]);
@@ -162,6 +174,7 @@ const ElegantEditorial = memo(function ElegantEditorial({ state, editable = fals
           attending: attendance!,
           guest_count: attendance === "yes" ? 1 + Number(formData.guests || 0) : 0,
           data: customData,
+          ...(invitation ? { invitation_id: invitation.id } : {}),
         }),
       });
       const json = await res.json();
@@ -474,14 +487,25 @@ const ElegantEditorial = memo(function ElegantEditorial({ state, editable = fals
             as="h2"
             className={styles.sectionTitle}
           />
-          <EditableText
-            state={state}
-            textKey="rsvp-body"
-            fallback="We would be honored to have you celebrate with us. Please let us know by August 1, 2026."
-            editable={editable}
-            as="p"
-            className={styles.rsvpBody}
-          />
+          {invitation ? (
+            <>
+              <p className={styles.rsvpGreeting}>
+                {formatGuestGreeting(invitation.guestNames)}
+              </p>
+              <p className={styles.rsvpBody}>
+                We would be so honored to have you celebrate with us.
+              </p>
+            </>
+          ) : (
+            <EditableText
+              state={state}
+              textKey="rsvp-body"
+              fallback="We would be honored to have you celebrate with us. Please let us know by August 1, 2026."
+              editable={editable}
+              as="p"
+              className={styles.rsvpBody}
+            />
+          )}
 
           {!submitted ? (
             <form className={styles.rsvpForm} onSubmit={onSubmit}>

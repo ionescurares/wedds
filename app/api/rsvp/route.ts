@@ -8,6 +8,7 @@ type RsvpBody = {
   attending?: string;
   guest_count?: number;
   data?: Record<string, string>;
+  invitation_id?: string;
 };
 
 export async function POST(request: Request) {
@@ -35,6 +36,7 @@ export async function POST(request: Request) {
   }
 
   const guestCount = attending === "no" ? 0 : Math.max(1, Math.floor(body.guest_count ?? 1));
+  const invitationId = body.invitation_id?.trim() || null;
 
   const admin = getSupabaseAdmin();
 
@@ -47,6 +49,19 @@ export async function POST(request: Request) {
 
   if (!site) {
     return NextResponse.json({ error: "Published site not found" }, { status: 404 });
+  }
+
+  if (invitationId) {
+    const { data: invitation } = await admin
+      .from("invitations")
+      .select("id")
+      .eq("id", invitationId)
+      .eq("site_id", siteId)
+      .maybeSingle();
+
+    if (!invitation) {
+      return NextResponse.json({ error: "Invitation not found" }, { status: 404 });
+    }
   }
 
   let duplicate = false;
@@ -69,6 +84,7 @@ export async function POST(request: Request) {
           guest_count: guestCount,
           data: customData,
           submitted_at: new Date().toISOString(),
+          ...(invitationId ? { invitation_id: invitationId } : {}),
         })
         .eq("id", existing.id);
 
@@ -86,6 +102,7 @@ export async function POST(request: Request) {
       attending,
       guest_count: guestCount,
       data: customData,
+      ...(invitationId ? { invitation_id: invitationId } : {}),
     });
 
     if (insertError) {

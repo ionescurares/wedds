@@ -142,6 +142,13 @@
 .rsvpPetal2 { bottom: 20%; left: 8%; width: 16px; height: 10px; color: var(--peach); animation-delay: 2s; }
 .rsvpLabel { font-size: .65rem; font-weight: 600; letter-spacing: .4em; text-transform: uppercase; color: var(--sage-muted); margin-bottom: 1rem; }
 .rsvpTitle { font-family: var(--display); font-size: clamp(2rem, 4vw, 3.2rem); color: #fff; margin-bottom: .75rem; }
+.rsvpGreeting {
+  font-family: "Playfair Display", serif;
+  font-style: italic;
+  font-size: 1.4rem;
+  color: var(--peach);
+  margin: 0 0 0.25rem;
+}
 .rsvpSubtitle { font-size: .95rem; line-height: 1.8; margin-bottom: 3rem; opacity: .85; }
 
 .rsvpForm { text-align: left; display: flex; flex-direction: column; gap: 1.75rem; }
