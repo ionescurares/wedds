@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import GuestManager from "@/components/dashboard/GuestManager";
 import type { RsvpResponse, Site } from "@/types/database";
+import "../../dashboard.css";
 
 export const dynamic = "force-dynamic";
 
@@ -34,9 +35,13 @@ export default async function GuestsPage({ params }: PageProps) {
     .order("submitted_at", { ascending: false });
 
   return (
-    <GuestManager
-      site={site as unknown as Site}
-      initialResponses={(responses ?? []) as unknown as RsvpResponse[]}
-    />
+    <main className="dashboard-page">
+      <div className="dashboard-header">
+        <GuestManager
+          site={site as unknown as Site}
+          initialResponses={(responses ?? []) as unknown as RsvpResponse[]}
+        />
+      </div>
+    </main>
   );
 }

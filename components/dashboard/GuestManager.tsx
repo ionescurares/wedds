@@ -112,7 +112,7 @@ export default function GuestManager({ site, initialResponses }: Props) {
   };
 
   return (
-    <div className={styles.page}>
+    <div>
       <header className={styles.header}>
         <div className={styles.headerLeft}>
           <Link href="/dashboard" className={styles.backBtn}>
